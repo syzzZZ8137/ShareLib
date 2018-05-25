@@ -5,12 +5,11 @@ Created on Fri May 25 10:54:50 2018
 @author: Harrison
 """
 import pymysqlread
-
 def getparamdata(exchange='DCE',index='C',model='wing'):        #获取exchange-index的参数数据
     #%% 获取数据库数据
     modelinstance=exchange+'-'+index
     strall='SELECT * FROM futurexdb.model_params where accountid=20 and model= '+"'wing' " +'and modelinstance like'+"'%"+modelinstance+"%'"
-    data=pymysqlread.dbconn(strall)
+    data=pymysqlread.dbconn(strall)                             #读取函数pymysqlread
     #%%整理数据表
     days = data.modelinstance.drop_duplicates().tolist()
     Totaltable=[]
@@ -21,11 +20,9 @@ def getparamdata(exchange='DCE',index='C',model='wing'):        #获取exchange-
         bb['day']=int(days[i].split('-')[2])                    #加入日期列
         Totaltable.append({'days':days[i],'data':bb})
     return Totaltable
-    
 #%%使用方法
 if __name__ == '__main__':
     a=getparamdata(exchange='DCE',index='C',model='wing')
     alpha=list(a[0]['data'].alpha)                              #获取第一个表的alpha值
     day=list(a[0]['data'].day)                                  #获取第一个表的day值
     print(alpha,day)
-  
