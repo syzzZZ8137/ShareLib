@@ -6,8 +6,7 @@ Created on Mon May 14 09:38:47 2018
 """
 import pymysql
 import pandas as pd
-
-#读出
+#%% 接口：单纯读取MySQL表单数据
 def dbconn(sql_query):
     connection = pymysql.connect(host='47.100.2.112', port=33306, user='gxqh', passwd='R{Zppc7r0Lxd')
     cursor=connection.cursor(pymysql.cursors.DictCursor)

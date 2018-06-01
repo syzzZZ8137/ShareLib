@@ -4,12 +4,13 @@ Created on Fri May 25 10:54:50 2018
 
 @author: Harrison
 """
-import pymysqlread
-def getparamdata(exchange='DCE',index='C',model='wing'):        #获取exchange-index的参数数据
+import PyMySQLread
+#%%获取exchange-index的参数数据
+def getparamdata(exchange,index,model='wing'):
     #%% 获取数据库数据
     modelinstance=exchange+'-'+index
     strall='SELECT * FROM futurexdb.model_params where accountid=20 and model= '+"'wing' " +'and modelinstance like'+"'%"+modelinstance+"%'"
-    data=pymysqlread.dbconn(strall)                             #读取函数pymysqlread
+    data=PyMySQLread.dbconn(strall)                             #读取函数pymysqlread
     #%%整理数据表
     days = data.modelinstance.drop_duplicates().tolist()
     Totaltable=[]
