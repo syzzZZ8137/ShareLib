@@ -4,10 +4,9 @@ Created on Wed May 30 10:25:34 2018
 
 @author: Harrison
 """
-
 import pymysql
-
-def Writeparamdata(changeitem,changevalue,exchange='',index='',days=''):        #获取exchange-index的参数数据
+#%% 更改model_params表中的数据，选定合约和参数名
+def Writeparamdata(changeitem,changevalue,exchange='',index='',days=''):
     
     if exchange==''and index=='' and days=='':  #判断是否有合约限制 输出可执行MySQL语句
         strall="UPDATE futurexdb.model_params SET paramvalue='"+ changevalue + "' where accountid=20 and paramname="+"'"\
@@ -25,7 +24,7 @@ def Writeparamdata(changeitem,changevalue,exchange='',index='',days=''):        
         outputstr='本次更改：'+modelinstance+' '+changeitem+' 值至：'+changevalue+' 受到影响的行数: '+str(data)
     print(outputstr)                            #print结果 
     return outputstr                            #返回结果
-
+#%% MySQL连接函数
 def MySQLexecute1(inputstr):                    #替换保存
     connection = pymysql.connect(host='47.100.2.112', port=33306, user='gxqh', passwd='R{Zppc7r0Lxd')
     cursor=connection.cursor(pymysql.cursors.DictCursor)
@@ -34,7 +33,6 @@ def MySQLexecute1(inputstr):                    #替换保存
     cursor.close()
     connection.close
     return influencenum                         #返回受影响条数
-
 #%%使用方法
 #a=Writeparamdata('alpha','0')
 #b=Writeparamdata('alpha','0','DCE','C','1')                        
