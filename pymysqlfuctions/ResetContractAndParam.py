@@ -21,3 +21,5 @@ def ResetContractAndParam(needresetcontract,copyfromcontract='Rest-Rest-1'):
     return
 #%%
     #ResetContractAndParam('DCE-C-360') #按照默认的'Rest-Rest-1'合约基准值重置'DCE-C-360'所有参数
+        
+        
