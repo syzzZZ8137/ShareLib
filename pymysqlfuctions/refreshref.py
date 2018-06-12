@@ -23,3 +23,6 @@ def refreshref():
             done=ChangeParamData.Writeparamdata('f_ref',pricedata,excode,concode)
             print(done)
     return
+#%%更新方法
+if __name__ == '__main__':
+    refreshref()
