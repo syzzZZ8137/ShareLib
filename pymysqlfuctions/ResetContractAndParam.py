@@ -8,9 +8,9 @@ import Delparamdata
 import ReadParamData
 import NewParamData
 #%%重置，复制另一份合约的数据
-def ResetContractAndParam(needresetcontract,copyfromcontract='Rest-Rest-1'):
-    Delparamdata.Delparamdata(needresetcontract)
+def ResetContractAndParam(needresetcontract,copyfromcontract='DCE-C-1'):
     old1=ReadParamData.getparamdata(copyfromcontract.split('-')[0],copyfromcontract.split('-')[1],copyfromcontract.split('-')[2])
+    Delparamdata.Delparamdata(needresetcontract)
     aa=old1[0]['data']
     sizaa=aa.shape[1]-1
     for i in range(sizaa):
@@ -20,6 +20,6 @@ def ResetContractAndParam(needresetcontract,copyfromcontract='Rest-Rest-1'):
     print('复制'+copyfromcontract+'值至'+needresetcontract)
     return
 #%%
-    #ResetContractAndParam('DCE-C-360') #按照默认的'Rest-Rest-1'合约基准值重置'DCE-C-360'所有参数
+    #ResetContractAndParam('DCE-C-360') #按照默认的'DCE-C-1'合约基准值重置'DCE-C-360'所有参数
         
         

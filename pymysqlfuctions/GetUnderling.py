@@ -5,14 +5,13 @@ Created on Wed Jun  6 16:35:05 2018
 @author: Harrison
 """
 
-import PyMySQLread
 import PyMySQLreadZH
 import pandas as pd
 #%%
 def Getunderling():
     #%% 
-    strall='SELECT * FROM futurexdb.model_params where accountid=20 and model= '+"'wing' "
-    data=PyMySQLread.dbconn(strall)                             #读取函数pymysqlread
+    strall="SELECT * FROM futurexdb.model_params where accountid=20 and model='wing' "
+    data=PyMySQLreadZH.dbconn(strall)                             #读取函数pymysqlread
     #%%
     days = data.modelinstance.drop_duplicates().tolist()
     Totaltable=[]
