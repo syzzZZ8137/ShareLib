@@ -22,6 +22,12 @@ def refreshref():
             pricedata=str(winddata.Data[0][0])
             done=ChangeParamData.Writeparamdata('f_ref',pricedata,excode,concode)
             print(done)
+<<<<<<< HEAD
 
 if __name__=='__main__':
+=======
+    return
+#%%更新方法
+if __name__ == '__main__':
+>>>>>>> 3e5cec31e59f336b62cbfd9d4f8c85e588ce9fca
     refreshref()
