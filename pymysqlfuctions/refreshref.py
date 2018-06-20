@@ -7,9 +7,9 @@ Created on Tue Jun 12 11:03:25 2018
 from WindPy import w
 import GetUnderling
 import ChangeParamData
-w.start();
 #%%根据wind数据库更新f_ref价格数据（使用时间：最好是交易时间，开盘前可能会有误差）
 def refreshref():
+    w.start()
     exchange,contract=GetUnderling.Getunderling()
     numex=exchange.shape[0]
     for i in range(numex):    
@@ -22,4 +22,6 @@ def refreshref():
             pricedata=str(winddata.Data[0][0])
             done=ChangeParamData.Writeparamdata('f_ref',pricedata,excode,concode)
             print(done)
-    return
+
+if __name__=='__main__':
+    refreshref()
