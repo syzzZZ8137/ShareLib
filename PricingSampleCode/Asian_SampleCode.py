@@ -63,6 +63,8 @@ volatility_curve = ql.BlackConstantVol(0, ql.TARGET(),ql.QuoteHandle(volatility)
 
 # option exercise type
 exercise = ql.EuropeanExercise(ql_expiry_date)
+#exercise = ql.AmericanExercise(ql_valuation_date,ql_expiry_date)
+
 # quote handling
 underlying_h = ql.QuoteHandle(underlying_price)
 # yield term structure handling
