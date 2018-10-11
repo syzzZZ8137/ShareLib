@@ -11,8 +11,7 @@ import QuantLib as ql
 
 class PricingFunc(object):
     '''
-    定价类-抽象,product为Option对象
-    Constructor    
+    定价类-抽象, product为OptionProduct.Option对象   
     '''
     def __init__(self,product):
         '''
@@ -28,9 +27,16 @@ class PricingFunc(object):
     
     def GreeksFunc(self):
         raise NotImplementedError
+       
     
     def PreWork(self):
-        '''定义Payoff'''
+        '''      
+        返回 payoff,exercise,process
+        payoff：QuantLib.PlainVanillaPayoff类型, 
+        excercise：QuantLib.EuropeanExercise或QuantLib.AmericanExercise类型, 与self.product的行权方式对应
+        process: QuantLib.BlackScholesMertonProcess类型
+        '''        
+        #定义Payoff
         if self.product.option_type == 'call':
             put_or_call = ql.Option.Call
         elif self.product.option_type == 'put':
@@ -40,7 +46,7 @@ class PricingFunc(object):
             return(-1)
         payoff = ql.PlainVanillaPayoff(put_or_call,self.product.strike_price.value())  #根据call/put，产生相应Payoff对象
 
-        '''定义Exercise'''
+        #定义Exercise
         #shift expiry date forward by 1 day, so that calculation can be done on the expiry day
         expiry_date_1 = self.product.expiry_date + dt.timedelta(days=1)
         eDate = ql.Date(expiry_date_1.day, expiry_date_1.month, expiry_date_1.year)
@@ -54,14 +60,14 @@ class PricingFunc(object):
             print('unknown option type:', self.product.exercise_type)
             return(-1)
         
-        
-        '''定义Calendar'''
+        #定义Calendar
         #Set the valuation date, by default it will use today's date
         ql.Settings.instance().evaluationDate = self.vDate
         calendar = ql.China()
         day_counter = ql.ActualActual()
         
-        '''定义TermStructure(Vol,Dividend,Int)'''
+        #定义Vol,Dividend,InterestRate的期限结构
+        # 假定股息、无风险利率和波动率曲线是平的
         dividend_curve = ql.FlatForward(0,ql.TARGET(), ql.QuoteHandle(self.product.dividend_rate), day_counter)
         interest_curve = ql.FlatForward(0,ql.TARGET(), ql.QuoteHandle(self.product.interest_rate), day_counter)
         volatility_curve = ql.BlackConstantVol(0, ql.TARGET(),ql.QuoteHandle(self.product.volatility), day_counter)
@@ -70,11 +76,18 @@ class PricingFunc(object):
         d = ql.YieldTermStructureHandle(dividend_curve)
         r = ql.YieldTermStructureHandle(interest_curve)
         v = ql.BlackVolTermStructureHandle(volatility_curve)
+        
+        # 标准BSM process
         process = ql.BlackScholesMertonProcess(u, d, r, v)
         return payoff,exercise,process
     
-    #NumericalMethod
+
     def Numerical_Greeks(self,option):
+        '''
+        数值方法计算希腊字母 (Delta, Gamma, Vega(%), ThetaPerDay, Rho(%))
+        Greeks: pandas.DataFrame
+        '''
+        
         #Delta Gamma
         u0 = self.product.underlying_price.value()
         p0 = option.NPV()
@@ -111,24 +124,25 @@ class PricingFunc(object):
         self.product.interest_rate.setValue(r0)
         rho = (p_plus - p0)/h
         
-        Greeks = pd.DataFrame([delta,gamma,vega/100,theta/365,rho/100],\
+        #greeks, pandas.DataFrame
+        Greeks = pd.DataFrame([delta,gamma,vega/100,theta/365,rho/100], columns = [''], \
                                index=['Delta','Gamma','Vega(%)','ThetaPerDay','Rho(%)'])
         
         return Greeks
 
 class Vanilla_BSM(PricingFunc):
     '''
-    香草期权定价类
+    香草期权定价类, PricingFunc的子类
     先执行Set_Param函数
     '''
     def __call__(self):
-        '''定义Option,输入PayOff与Exercise'''
+        '''计算PayOff与Exercise，定义Option为QuantLib标准VanillaOption对象'''
         payoff,exercise,process = self.PreWork()
         option = ql.VanillaOption(payoff, exercise)
         return option,process
         
     def PricingFunc(self,option,process):
-        '''------------- Set pricing engine, return both option and process -------------'''
+        '''设置定价引擎，返回 option, process'''
         if self.product.exercise_type == 'E':
             engine = ql.AnalyticEuropeanEngine(process)
         elif self.product.exercise_type == 'A':
@@ -143,7 +157,7 @@ class Vanilla_BSM(PricingFunc):
         if self.product.exercise_type == 'E':
             engine = ql.AnalyticEuropeanEngine(process)
             option.setPricingEngine(engine)
-            Greeks = pd.DataFrame([option.delta(),option.gamma(),option.vega()/100,option.theta()/365,option.rho()/100],\
+            Greeks = pd.DataFrame([option.delta(),option.gamma(),option.vega()/100,option.theta()/365,option.rho()/100], columns = [''], \
                                    index=['Delta','Gamma','Vega(%)','ThetaPerDay','Rho(%)'])
         elif self.product.exercise_type == 'A':
             #用离散法计算Greeks
@@ -151,12 +165,9 @@ class Vanilla_BSM(PricingFunc):
             #engine = ql.BinomialVanillaEngine(process, "crr", 100)  #BTM
             option.setPricingEngine(engine)
             Greeks = self.Numerical_Greeks(option)  #进入离散法计算Greeks
-            
         else:
             pass
-
         return Greeks
-
 
 
 class AriAsian_MC(PricingFunc):
@@ -176,8 +187,10 @@ class AriAsian_MC(PricingFunc):
         return ql.Date(dt.day, dt.month,dt.year)
     
     def PricingFunc(self,option,process):
+        '''
+        设置engine为QuantLib中相应的定价引擎，返回 option, process
+        '''
         #无论亚美还是亚欧都一样
-        # pricing engine
         engine = ql.MCDiscreteArithmeticAPEngine(process, self.product.mc_str, self.product.is_bb, self.product.is_av, self.product.is_cv, self.product.n_require, self.product.tolerance, self.product.n_max, self.product.seed)
         option.setPricingEngine(engine)
         return option.NPV()
@@ -188,7 +201,6 @@ class AriAsian_MC(PricingFunc):
         engine = ql.MCDiscreteArithmeticAPEngine(process, self.product.mc_str, self.product.is_bb, self.product.is_av, self.product.is_cv, self.product.n_require, self.product.tolerance, self.product.n_max, self.product.seed)
         option.setPricingEngine(engine)
         Greeks = self.Numerical_Greeks(option)  #进入离散法计算Greeks
-        
         return Greeks
 
 
