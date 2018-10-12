@@ -6,6 +6,7 @@ Created on Thu Oct 11 10:40:29 2018
 """
 
 import unittest
+from OptionPricer import *
 
 class testOptionPricer(unittest.TestCase):
     
