@@ -197,10 +197,35 @@ class AriAsian_MC(PricingFunc):
         
     
     def GreeksFunc(self,option,process):
-        #无论亚美还是亚欧都一样
-        engine = ql.MCDiscreteArithmeticAPEngine(process, self.product.mc_str, self.product.is_bb, self.product.is_av, self.product.is_cv, self.product.n_require, self.product.tolerance, self.product.n_max, self.product.seed)
-        option.setPricingEngine(engine)
-        Greeks = self.Numerical_Greeks(option)  #进入离散法计算Greeks
+
+        try:
+            if self.product.exercise_type == 'E':
+                engine = ql.AnalyticEuropeanEngine(process)
+                option.setPricingEngine(engine)
+                Greeks = pd.DataFrame([option.delta(),option.gamma(),option.vega()/100,option.theta()/365,option.rho()/100], columns = [''], \
+                                       index=['Delta','Gamma','Vega(%)','ThetaPerDay','Rho(%)'])
+            elif self.product.exercise_type == 'A':
+                    #用BaroneAdesiWhaley离散法计算Greeks
+                    engine = ql.BaroneAdesiWhaleyEngine(process)
+                    #engine = ql.BinomialVanillaEngine(process, "crr", 100)  #BTM
+                    option.setPricingEngine(engine)
+                    Greeks = self.Numerical_Greeks(option)
+            else:
+                raise ValueError #传入的参数self.product.exercise_type 无效
+            
+        #缺少解析解时用离散法蒙特卡洛模拟，计算Greeks
+        except:
+            engine = ql.MCDiscreteArithmeticAPEngine(process, self.product.mc_str, self.product.is_bb, self.product.is_av, self.product.is_cv, self.product.n_require, self.product.tolerance, self.product.n_max, self.product.seed)
+            option.setPricingEngine(engine)
+            Greeks = self.Numerical_Greeks(option)  
+            
+# =============================================================================
+#         #无论亚美还是亚欧都一样
+#         engine = ql.MCDiscreteArithmeticAPEngine(process, self.product.mc_str, self.product.is_bb, self.product.is_av, self.product.is_cv, self.product.n_require, self.product.tolerance, self.product.n_max, self.product.seed)
+#         option.setPricingEngine(engine)
+#         Greeks = self.Numerical_Greeks(option)  #进入离散法计算Greeks
+# =============================================================================
+        
         return Greeks
 
 
