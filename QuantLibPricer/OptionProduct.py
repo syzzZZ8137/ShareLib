@@ -43,12 +43,14 @@ class AsianOption(Option):
         self.seed = 101
 
 '''Sample Input'''
-expiry_date = dt.datetime.strptime('20170324', '%Y%m%d')
-valuation_date = fixing_date = dt.datetime.strptime('20170322', '%Y%m%d')
-historical_average = 1005
-
-ovo = VanillaOption(1023, 1000, valuation_date,expiry_date, 0.3, 0, 0.05, 'call','E')
-oao = AsianOption(1023, 1000, valuation_date,expiry_date, 0.3, 0, 0.05, 'call','E')
-oao(fixing_date,historical_average)
-
+# =============================================================================
+# expiry_date = dt.datetime.strptime('20170324', '%Y%m%d')
+# valuation_date = fixing_date = dt.datetime.strptime('20170322', '%Y%m%d')
+# historical_average = 1005
+# 
+# ovo = VanillaOption(1023, 1000, valuation_date,expiry_date, 0.3, 0, 0.05, 'call','E')
+# oao = AsianOption(1023, 1000, valuation_date,expiry_date, 0.3, 0, 0.05, 'call','E')
+# oao(fixing_date,historical_average)
+# 
+# =============================================================================
 
