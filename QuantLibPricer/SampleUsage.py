@@ -51,7 +51,7 @@ Greeks = pricer.GreeksFunc(option,process)
 print('香草美式价格为：',V)
 print('香草美式希腊字母为：',Greeks)
 
-# ---------- testing pricing 亚欧式 fixDay=valueDay----------
+# ---------- testing pricing 亚欧式 fixDay=valueDay----------       # exp-fixDay = exp-valueDay
 pricer = AriAsian_MC(oao1)
 option,process = pricer()
 V = pricer.PricingFunc(option,process)
@@ -59,14 +59,14 @@ Greeks = pricer.GreeksFunc(option,process)
 print('亚式1价格为：',V)
 print('亚式希腊字母为：',Greeks)
 
-# ---------- testing pricing 亚欧式 fixDay>valueDay----------
+# ---------- testing pricing 亚欧式 fixDay>valueDay----------      # exp-fixDay < exp-valueDay
 pricer = AriAsian_MC(oao2)
 option,process = pricer()
 V = pricer.PricingFunc(option,process)
 Greeks = pricer.GreeksFunc(option,process)
 print('亚式2价格为：',V)
 print('亚式希腊字母为：',Greeks)
-# ---------- testing pricing 亚欧式 fixDay<valueDay----------
+# ---------- testing pricing 亚欧式 fixDay<valueDay----------      # exp-fixDay > exp-valueDay
 pricer = AriAsian_MC(oao3)
 option,process = pricer()
 V = pricer.PricingFunc(option,process)
