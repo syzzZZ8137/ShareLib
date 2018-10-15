@@ -137,7 +137,7 @@ class Vanilla_BSM(PricingFunc):
     '''
     def __call__(self):
         '''计算PayOff与Exercise，定义Option为QuantLib标准VanillaOption对象'''
-        payoff,exercise,process = self.PreWork()
+        payoff, exercise, process = self.PreWork()
         option = ql.VanillaOption(payoff, exercise)
         return option,process
         
@@ -169,6 +169,54 @@ class Vanilla_BSM(PricingFunc):
             pass
         return Greeks
 
+class Barrier_BSM(PricingFunc):
+    '''
+    障碍期权定价类, PricingFunc的子类
+    '''
+    def __call__(self, barrierType, barrier, rebate):
+        '''计算PayOff与Exercise，定义Option为QuantLib标准BarrierOption对象'''
+        payoff, exercise, process = self.PreWork() # Vanilla Payoff, European/American, BSM process
+        option = ql.BarrierOption(barrierType, barrier, rebate, payoff, exercise)
+        return option,process
+    
+    def PricingFunc(self,option,process):
+        '''设置定价引擎'''
+        # 欧式、美式均为QuantLib.AnalyticBarrierEngine
+        if self.product.exercise_type == 'E':
+            engine = ql.AnalyticBarrierEngine(process)
+        elif self.product.exercise_type == 'A':
+            engine = ql.BaroneAdesiWhaleyEngine(process)
+        else:
+            pass
+        option.setPricingEngine(engine)
+        return option.NPV()
+    
+    def GreeksFunc(self,option,process):
+        engine = ql.AnalyticBarrierEngine(process)
+        option.setPricingEngine(engine)
+        
+        try:
+            if self.product.exercise_type == 'E':
+                engine = ql.AnalyticBarrierEngine(process)
+                option.setPricingEngine(engine)
+                Greeks = pd.DataFrame([option.delta(),option.gamma(),option.vega()/100,option.theta()/365,option.rho()/100], columns = [''], \
+                                       index=['Delta','Gamma','Vega(%)','ThetaPerDay','Rho(%)'])
+            elif self.product.exercise_type == 'A':
+                    #用BaroneAdesiWhaley离散法计算Greeks
+                    engine = ql.BaroneAdesiWhaleyEngine(process)
+                    #engine = ql.BinomialVanillaEngine(process, "crr", 100)  #BTM
+                    option.setPricingEngine(engine)
+                    Greeks = self.Numerical_Greeks(option)
+            else:
+                raise ValueError #传入的参数self.product.exercise_type 无效
+                
+        #缺少解析解时用离散法蒙特卡洛模拟，计算Greeks
+        except:
+            engine = ql.MCDiscreteArithmeticAPEngine(process, self.product.mc_str, self.product.is_bb, self.product.is_av, self.product.is_cv, self.product.n_require, self.product.tolerance, self.product.n_max, self.product.seed)
+            option.setPricingEngine(engine)
+            Greeks = self.Numerical_Greeks(option)  
+            
+        return Greeks
 
 class AriAsian_MC(PricingFunc):
     def __call__(self):
@@ -229,3 +277,61 @@ class AriAsian_MC(PricingFunc):
         return Greeks
 
 
+if __name__ == '__main__':
+ 
+     # ---------- testing pricing 分段看跌，欧式----------
+     underlying_price = 12000
+     strike_price = 13000
+     valuation_date = fixing_date = dt.datetime.strptime('20181015', '%Y%m%d')
+     
+     expiry_in_months = 7
+     expiry_in_days = 7*30
+     expiry_date = valuation_date + dt.timedelta(days=expiry_in_days)  # 7个月
+     
+     expiry_date = dt.datetime.strptime('20190513', '%Y%m%d')
+     
+     volatility = 0.25
+     interest_rate = 0
+     dividend_rate = 0
+     option_type = 'put'
+     exercise_type = 'E'
+
+     
+    # 1个 Vanilla European Put Option
+    ovo = VanillaOption(underlying_price, strike_price, valuation_date, expiry_date, volatility, interest_rate, dividend_rate, option_type, exercise_type) 
+    pricer = Vanilla_BSM(ovo)
+    option,process = pricer();     V = pricer.PricingFunc(option,process);     Greeks_ovo = pricer.GreeksFunc(option,process)
+     
+     # 4个 down-and-out , H < underlying_price
+     barrierType = ql.Barrier.DownIn; 
+     barrier0 = strike_price; 
+     barrier1 = strike_price-500;
+     barrier2 = strike_price-1000;
+     barrier3 = strike_price-1500;
+     
+     obo0 = BarrierOption(strike_price, barrier0, valuation_date, expiry_date, volatility, interest_rate, dividend_rate, option_type, exercise_type) 
+     obo0(barrierType, barrier0)
+     obo1 = BarrierOption(strike_price, barrier1, valuation_date, expiry_date, volatility, interest_rate, dividend_rate, option_type, exercise_type)  
+     obo1(barrierType, barrier1)
+     obo2 = BarrierOption(strike_price, barrier2, valuation_date, expiry_date, volatility, interest_rate, dividend_rate, option_type, exercise_type) 
+     obo2(barrierType, barrier2)
+     obo3 = BarrierOption(strike_price, barrier3, valuation_date, expiry_date, volatility, interest_rate, dividend_rate, option_type, exercise_type) 
+     obo3(barrierType, barrier3)
+    
+    rebate = 0; ##########?????????????????????????????
+    pricer = Barrier_BSM(obo0)
+    option, process = pricer(barrierType, barrier0, rebate);     V0 = pricer.PricingFunc(option,process);  ###Greeks_obo0 = pricer.GreeksFunc(option,process)
+    pricer = Barrier_BSM(obo1)
+    option, process = pricer(barrierType, barrier1, rebate);     V1 = pricer.PricingFunc(option,process);  
+    pricer = Barrier_BSM(obo2)
+    option, process = pricer(barrierType, barrier2, rebate);     V2 = pricer.PricingFunc(option,process);  
+    pricer = Barrier_BSM(obo3)
+    option, process = pricer(barrierType, barrier3, rebate);     V3 = pricer.PricingFunc(option,process);  
+
+    # 4个CashOrNothingPayoff
+    #TODO
+
+
+
+
+    print('QuantLib 拆分 解析解定价')
