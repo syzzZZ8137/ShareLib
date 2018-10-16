@@ -6,8 +6,38 @@ Created on Wed Oct 10 11:14:45 2018
 """
 
 import pandas as pd
+import numpy as np
 import datetime as dt
 import QuantLib as ql
+
+
+       
+def PortfolioPricingFunc(pricer_list, weight_list):
+    
+    num_product = len(pricer_list)
+
+    
+    if len(weight_list) != num_product:
+        print('Invalid Input! Inputs pricer_list and weight_list have different length. Please try again!')
+        raise ValueError
+    else:
+        V_portfolio = 0
+        V_arr = np.zeros((len(pricer_list), 1))
+        Greeks_portfolio = pd.DataFrame([0, 0, 0, 0, 0], columns = [''], index=['Delta','Gamma','Vega(%)','ThetaPerDay','Rho(%)'])        
+        
+        for i in range(num_product):
+            pricer = pricer_list[i]
+            option, process = pricer()
+            V_arr[i] = V_i = pricer.PricingFunc(option, process)
+            Greeks_i = pricer.GreeksFunc(option, process) # pd.DataFrame([option.delta(),option.gamma(),option.vega()/100,option.theta()/365,option.rho()/100], columns = [''], index=['Delta','Gamma','Vega(%)','ThetaPerDay','Rho(%)'])
+            V_portfolio += V_i * weight_list[i]
+            Greeks_portfolio += Greeks_i
+        #V_portfolio = V_arr * weight_list
+        print ('期权组合价格：', V_portfolio)
+        print ('期权组合希腊字母：', Greeks_portfolio)
+        return V_portfolio, Greeks_portfolio
+        
+
 
 class PricingFunc(object):
     '''
@@ -26,8 +56,7 @@ class PricingFunc(object):
         raise NotImplementedError
     
     def GreeksFunc(self):
-        raise NotImplementedError
-       
+        raise NotImplementedError    
     
     def PreWork(self):
         '''      
@@ -275,9 +304,3 @@ class AriAsian_MC(PricingFunc):
 # =============================================================================
         
         return Greeks
-
-    
-    
-    
-    
-    

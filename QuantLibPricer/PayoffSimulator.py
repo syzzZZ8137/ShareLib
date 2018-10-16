@@ -128,7 +128,7 @@ if __name__ == '__main__':
      option, process = pricer()
      
      Nsample = num_paths = 100000;  
-     Nstep = timestep = 10000;  
+     Nstep = timestep = 1000;  
      length = (expiry_date - valuation_date).days / 365  #in years   
 
      payoffSimulator = PayoffSimulator(process, length, Nsample, Nstep)
