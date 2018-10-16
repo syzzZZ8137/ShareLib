@@ -53,5 +53,6 @@ if __name__ == '__main__':
     
     pricer_list = [pricer1, pricer2, pricer3, pricer4, pricer5]
     weight_list = [1.0, -0.1, -0.1, -0.2, -0.2]
-        
+
     V_result, Greeks_result = PortfolioPricingFunc(pricer_list, weight_list)
+    

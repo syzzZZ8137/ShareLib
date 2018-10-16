@@ -108,7 +108,7 @@ def getPriceAndStd(payoffs, interest_rate, time_to_maturity):
 if __name__ == '__main__':
  
      # ---------- testing pricing 分段看跌，欧式----------
-     underlying_price = 12000
+     underlying_price = 13000
      strike_price = 13000
      valuation_date = fixing_date = dt.datetime.strptime('20181015', '%Y%m%d')
      expiry_in_months = 7
@@ -127,7 +127,7 @@ if __name__ == '__main__':
      pricer = Vanilla_BSM(ovo)
      option, process = pricer()
      
-     Nsample = num_paths = 100000;  
+     Nsample = num_paths = 200000;  
      Nstep = timestep = 1000;  
      length = (expiry_date - valuation_date).days / 365  #in years   
 
@@ -137,10 +137,10 @@ if __name__ == '__main__':
      payoffs = payoffSimulator.get_payoffs(paths, pricer)
      # payoffs -> price
      price, std_error = getPriceAndStd(payoffs, interest_rate, expiry_in_days)
-     print('分段看跌欧式期权1定价', price)
+     print('分段看跌欧式期权蒙特卡洛模拟定价', price)
      print('定价标准差', std_error)
-     '''分段看跌欧式期权1定价 737.1083842646926
-     定价标准差 8.645412156065138'''
+     '''分段看跌欧式期权蒙特卡洛模拟定价 736.4435151762555
+     定价标准差 1.9393554914125504'''
      
     
     

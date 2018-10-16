@@ -16,7 +16,6 @@ def PortfolioPricingFunc(pricer_list, weight_list):
     
     num_product = len(pricer_list)
 
-    
     if len(weight_list) != num_product:
         print('Invalid Input! Inputs pricer_list and weight_list have different length. Please try again!')
         raise ValueError
@@ -37,7 +36,6 @@ def PortfolioPricingFunc(pricer_list, weight_list):
         print ('期权组合希腊字母：', Greeks_portfolio)
         return V_portfolio, Greeks_portfolio
         
-
 
 class PricingFunc(object):
     '''
